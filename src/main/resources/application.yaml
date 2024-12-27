@@ -1,6 +1,23 @@
 spring:
   application:
     name: kafka-stream-api
+  kafka:
+    bootstrap-servers: localhost:29093,localhost:39093,localhost:49093
+    streams:
+      properties:
+        schema.registry.url: http://localhost:8081
+        default.key.serde: io.confluent.kafka.streams.serdes.avro.SpecificAvroSerde
+        default.value.serde: io.confluent.kafka.streams.serdes.avro.SpecificAvroSerde
+        commit.interval.ms: 5000
+        state.dir: /tmp/kafka-streams
+    security:
+      protocol: SSL
+    ssl:
+      trust-store-location: classpath:kafka.server.truststore.jks
+      trust-store-password: password123
+      key-store-location: classpath:kafka.server.keystore.jks
+      key-store-password: password123
+      key-password: password123
 
 topic:
   orders-in: "orders-in"

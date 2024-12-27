@@ -10,6 +10,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.support.serializer.JsonSerde;
 import org.springframework.stereotype.Component;
 
+import java.math.BigDecimal;
+
 @Component
 public class OrdersTopology {
 
@@ -39,7 +41,7 @@ public class OrdersTopology {
 
         // Step 2: Logic
         KTable<String, OrderEvent> ordersProcessed = orders
-                .filter((key, value) -> value.price() >= 100);
+                .filter((key, value) -> value.price().compareTo(BigDecimal.valueOf(100)) > 0);
 
         ordersProcessed
                 .toStream()
