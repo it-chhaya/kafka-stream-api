@@ -23,3 +23,4 @@ topic:
   orders-in: "orders-in"
   orders-out: "orders-out"
   orders-store: "orders-store"
+  products-stock-in: "products-stock-in"

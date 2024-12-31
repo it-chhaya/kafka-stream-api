@@ -15,11 +15,25 @@ public class KafkaTopicConfig {
     @Value("${topic.orders-out}")
     private String ordersOut;
 
+    @Value("${topic.products-stock-in}")
+    private String productsStockIn;
+
+    @Bean
+    public NewTopic productsStockInTopic() {
+        return TopicBuilder
+                .name(productsStockIn)
+                .partitions(3)
+                .replicas(3)
+                .compact()
+                .build();
+    }
+
     @Bean
     public NewTopic ordersEventTopicIn() {
         return TopicBuilder
                 .name(ordersIn)
-                .partitions(1)
+                .partitions(3)
+                .replicas(3)
                 .compact()
                 .build();
     }
@@ -28,7 +42,8 @@ public class KafkaTopicConfig {
     public NewTopic ordersEventTopicOut() {
         return TopicBuilder
                 .name(ordersOut)
-                .partitions(1)
+                .partitions(3)
+                .replicas(3)
                 .compact()
                 .build();
     }
@@ -37,7 +52,8 @@ public class KafkaTopicConfig {
     public NewTopic wordsEventTopic() {
         return TopicBuilder
                 .name("words")
-                .partitions(1)
+                .partitions(3)
+                .replicas(3)
                 .compact()
                 .build();
     }
@@ -46,7 +62,8 @@ public class KafkaTopicConfig {
     public NewTopic wordsEventTopicOut() {
         return TopicBuilder
                 .name("out-words")
-                .partitions(1)
+                .partitions(3)
+                .replicas(3)
                 .compact()
                 .build();
     }
