@@ -2,6 +2,7 @@ package co.istad.kafka_stream_api.controller;
 
 import co.istad.kafka_stream_api.event.OrderEvent;
 import co.istad.kafka_stream_api.event.ProductEvent;
+import co.istad.kafka_stream_api.event.ProductStockInReport;
 import lombok.RequiredArgsConstructor;
 import org.apache.kafka.streams.KeyValue;
 import org.apache.kafka.streams.StoreQueryParameters;
@@ -24,6 +25,31 @@ import java.util.Map;
 public class ProductController {
 
     private final StreamsBuilderFactoryBean streamsBuilderFactoryBean;
+
+    @GetMapping("/stock-in-reports")
+    public ResponseEntity<?> stockInReports() {
+
+        ReadOnlyKeyValueStore<String, ProductStockInReport> keyValueStore = streamsBuilderFactoryBean
+                .getKafkaStreams()
+                .store(
+                        StoreQueryParameters.fromNameAndType(
+                                "product-stock-in-report-store",
+                                QueryableStoreTypes.keyValueStore()
+                        )
+                );
+
+        List<ProductStockInReport> data = new ArrayList<>();
+
+        try (KeyValueIterator<String, ProductStockInReport> all = keyValueStore.all()) {
+            while (all.hasNext()) {
+                KeyValue<String, ProductStockInReport> next = all.next();
+                data.add(next.value);
+            }
+        }
+
+        return ResponseEntity.ok(data);
+
+    }
 
     @GetMapping("/count-stock")
     public ResponseEntity<?> countStockReport() {
