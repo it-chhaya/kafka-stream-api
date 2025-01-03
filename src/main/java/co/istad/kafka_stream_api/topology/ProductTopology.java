@@ -1,6 +1,7 @@
 package co.istad.kafka_stream_api.topology;
 
 import co.istad.kafka_stream_api.event.ProductEvent;
+import co.istad.kafka_stream_api.event.ProductStockInReport;
 import org.apache.kafka.common.serialization.Serdes;
 import org.apache.kafka.common.utils.Bytes;
 import org.apache.kafka.streams.StreamsBuilder;
@@ -11,6 +12,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.support.serializer.JsonSerde;
 import org.springframework.stereotype.Component;
+
+import java.util.ArrayList;
 
 @Component
 public class ProductTopology {
@@ -36,9 +39,44 @@ public class ProductTopology {
         // countAggregate(productEventKStream);
 
         // Aggregation - Reduce
-        reduceAggregate(productEventKStream);
+        // reduceAggregate(productEventKStream);
+
+        // Aggregation - Aggregator
+        aggregateProductEventsStream(productEventKStream);
 
         return streamsBuilder.build();
+    }
+
+    private void aggregateProductEventsStream(KTable<String, ProductEvent> productEventKStream) {
+
+        // Step 1 => Define Initializer
+        Initializer<ProductStockInReport> initializer =
+                () -> new ProductStockInReport("", new ArrayList<>(), 0);
+
+        // Step 2 => Define Aggregator
+        Aggregator<String, ProductEvent, ProductStockInReport> aggregator =
+                (key, productEvent, productStockInReport) -> {
+                    productStockInReport.productEvents().add(productEvent);
+                    return new ProductStockInReport(key, productStockInReport.productEvents(), productStockInReport.runningCount() + 1);
+                };
+
+        // Step 3 => Start Aggregate
+        KTable<String, ProductStockInReport> productStockInReportAggregated =
+                productEventKStream
+                        .toStream()
+                        .groupByKey()
+                        .aggregate(
+                                initializer,
+                                aggregator,
+                                Materialized
+                                        .<String, ProductStockInReport, KeyValueStore<Bytes, byte[]>>as("product-stock-in-report-store")
+                                        .withKeySerde(Serdes.String())
+                                        .withValueSerde(new JsonSerde<>(ProductStockInReport.class))
+                        );
+
+        productStockInReportAggregated
+                .toStream()
+                .print(Printed.<String, ProductStockInReport>toSysOut().withLabel("productStockInReportAggregated"));
     }
 
     private void countAggregate(KTable<String, ProductEvent> productEventKStream) {
@@ -57,13 +95,11 @@ public class ProductTopology {
                 .toStream()
                 .groupByKey()
                 .reduce(
-                        (productEvent, newProductEvent) -> {
-                            return new ProductEvent(productEvent.code(),
-                                    productEvent.name(),
-                                    productEvent.category(),
-                                    productEvent.quantity() + newProductEvent.quantity(),
-                                    productEvent.price());
-                        },
+                        (productEvent, newProductEvent) -> new ProductEvent(productEvent.code(),
+                                productEvent.name(),
+                                productEvent.category(),
+                                productEvent.quantity() + newProductEvent.quantity(),
+                                productEvent.price()),
                         Materialized.as("products-reduce-store")
                 );
 
