@@ -8,7 +8,7 @@ spring:
         schema.registry.url: http://localhost:8081
         default.key.serde: io.confluent.kafka.streams.serdes.avro.SpecificAvroSerde
         default.value.serde: io.confluent.kafka.streams.serdes.avro.SpecificAvroSerde
-        commit.interval.ms: 5000
+        commit.interval.ms: 10000
         state.dir: /tmp/kafka-streams
     security:
       protocol: SSL

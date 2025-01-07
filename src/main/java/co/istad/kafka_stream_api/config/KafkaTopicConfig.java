@@ -19,6 +19,26 @@ public class KafkaTopicConfig {
     private String productsStockIn;
 
     @Bean
+    public NewTopic alphabetTopic() {
+        return TopicBuilder
+                .name("alphabet")
+                .partitions(3)
+                .replicas(3)
+                .compact()
+                .build();
+    }
+
+    @Bean
+    public NewTopic alphabetMeaningTopic() {
+        return TopicBuilder
+                .name("alphabet-meaning")
+                .partitions(3)
+                .replicas(3)
+                .compact()
+                .build();
+    }
+
+    @Bean
     public NewTopic productsStockInTopic() {
         return TopicBuilder
                 .name(productsStockIn)
