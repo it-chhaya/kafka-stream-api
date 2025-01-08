@@ -18,6 +18,84 @@ public class KafkaTopicConfig {
     @Value("${topic.products-stock-in}")
     private String productsStockIn;
 
+    @Value("${topic.products-topic}")
+    private String productsTopic;
+
+    @Value("${topic.customers-topic}")
+    private String customersTopic;
+
+    @Value("${topic.orders-topic}")
+    private String ordersTopic;
+
+    @Value("${topic.order-details-topic}")
+    private String orderDetailsTopic;
+
+    @Value("${topic.payments-topic}")
+    private String paymentsTopic;
+
+    @Value("${topic.shipping-topic}")
+    private String shippingTopic;
+
+    @Bean
+    public NewTopic productsTopic() {
+        return TopicBuilder
+                .name(productsTopic)
+                .partitions(3)
+                .replicas(3)
+                .compact()
+                .build();
+    }
+
+    @Bean
+    public NewTopic customersTopic() {
+        return TopicBuilder
+                .name(customersTopic)
+                .partitions(3)
+                .replicas(3)
+                .compact()
+                .build();
+    }
+
+    @Bean
+    public NewTopic ordersTopic() {
+        return TopicBuilder
+                .name(ordersTopic)
+                .partitions(3)
+                .replicas(3)
+                .compact()
+                .build();
+    }
+
+    @Bean
+    public NewTopic orderDetailsTopic() {
+        return TopicBuilder
+                .name(orderDetailsTopic)
+                .partitions(3)
+                .replicas(3)
+                .compact()
+                .build();
+    }
+
+    @Bean
+    public NewTopic paymentsTopic() {
+        return TopicBuilder
+                .name(paymentsTopic)
+                .partitions(3)
+                .replicas(3)
+                .compact()
+                .build();
+    }
+
+    @Bean
+    public NewTopic shippingTopic() {
+        return TopicBuilder
+                .name(shippingTopic)
+                .partitions(3)
+                .replicas(3)
+                .compact()
+                .build();
+    }
+
     @Bean
     public NewTopic alphabetTopic() {
         return TopicBuilder

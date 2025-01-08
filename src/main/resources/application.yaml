@@ -3,6 +3,27 @@ spring:
     name: kafka-stream-api
   kafka:
     bootstrap-servers: localhost:29093,localhost:39093,localhost:49093
+    consumer:
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      #value-deserializer: io.confluent.kafka.serializers.KafkaAvroDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        schema.registry.url: http://localhost:8081
+        specific.avro.reader: false
+        value.subject.name.strategy: io.confluent.kafka.serializers.subject.TopicNameStrategy
+        spring.json.trusted.packages: "*"
+      group-id: ${spring.application.name}
+    producer:
+      properties:
+        schema.registry.url: http://localhost:8081
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      #value-serializer: io.confluent.kafka.serializers.KafkaAvroSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+    properties:
+      specific.avro.reader: false
+      auto.register.schemas: true
+      schema.registry.url: http://localhost:8081
     streams:
       properties:
         schema.registry.url: http://localhost:8081
@@ -24,3 +45,9 @@ topic:
   orders-out: "orders-out"
   orders-store: "orders-store"
   products-stock-in: "products-stock-in"
+  products-topic: "products-topic"
+  customers-topic: "customers-topic"
+  orders-topic: "orders-topic"
+  order-details-topic: "order-details-topic"
+  payments-topic: "payments-topic"
+  shipping-topic: "shipping-topic"
