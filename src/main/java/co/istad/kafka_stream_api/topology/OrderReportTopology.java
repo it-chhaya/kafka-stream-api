@@ -88,6 +88,22 @@ public class OrderReportTopology {
         orders
                 .print(Printed.<String, Order>toSysOut().withLabel(ordersTopic));
 
+
+        // Stream payment
+        KStream<String, Payment> payments = streamsBuilder
+                .stream(
+                        paymentsTopic,
+                        Consumed.with(Serdes.String(), new JsonSerde<>(Payment.class))
+                );
+
+        // Stream shipping
+        KStream<String, Shipping> shipping = streamsBuilder
+                .stream(
+                        shippingTopic,
+                        Consumed.with(Serdes.String(), new JsonSerde<>(Shipping.class))
+                );
+
+
         // Join (KStream-KTable = Order with Customer)
 
         ValueJoiner<Order, Customer, OrderReport> joiner =
@@ -133,11 +149,36 @@ public class OrderReportTopology {
         orderReportsV2
                 .print(Printed.<String, OrderReport>toSysOut().withLabel("order-report-joined-2"));
 
-        orderReportsV2
-                .to("final-order-reports",
-                        Produced.with(Serdes.String(), new JsonSerde<>(OrderReport.class))
+
+        // Join order report v2 - payment
+
+        ValueJoiner<OrderReport, Payment, OrderReport> orderReportJoinPayment =
+                (orderReport, payment) -> {
+                    orderReport.setPayment(payment);
+                    return orderReport;
+                };
+
+        StreamJoined<String, OrderReport, Payment> orderReportStreamJoinPayment =
+                StreamJoined.with(Serdes.String(), new JsonSerde<>(OrderReport.class), new JsonSerde<>(Payment.class));
+
+        KStream<String, OrderReport> orderReportsV3 = orderReportsV2
+                .join(
+                        payments,
+                        orderReportJoinPayment,
+                        joinWindows,
+                        orderReportStreamJoinPayment
                 );
 
+        // Convert KStream to KTable (Create State Store)
+        orderReportsV3
+                .toTable(
+                        Named.as("order-report-v3"),
+                        Materialized
+                                .<String, OrderReport, KeyValueStore<Bytes, byte[]>>
+                                        as("order-report-v3")
+                                .withKeySerde(Serdes.String())
+                                .withValueSerde(new JsonSerde<>(OrderReport.class))
+                );
 
 
 

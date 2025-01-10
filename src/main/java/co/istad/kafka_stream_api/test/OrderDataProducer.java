@@ -1,15 +1,14 @@
 package co.istad.kafka_stream_api.test;
 
-import co.istad.kafka_stream_api.event.order.Customer;
-import co.istad.kafka_stream_api.event.order.Order;
-import co.istad.kafka_stream_api.event.order.OrderDetail;
-import co.istad.kafka_stream_api.event.order.Product;
+import co.istad.kafka_stream_api.event.order.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+
+import java.util.concurrent.CompletableFuture;
 
 @Service
 @Slf4j
@@ -65,31 +64,31 @@ public class OrderDataProducer {
             kafkaTemplate.send(orderDetailsTopic, orderDetail.orderId(), orderDetail);
             log.info("Sent order details: {}", orderDetail.orderId());
 
-//            // Send Payment with small delay
-//            CompletableFuture.runAsync(() -> {
-//                try {
-//                    Thread.sleep(1000); // 1 second delay
-//                    Payment payment = dataGenerator.generatePayment(order.getOrderId());
-//                    kafkaTemplate.send(paymentsTopic, payment.getOrderId(), payment);
-//                    log.info("Sent payment for order: {}", payment.getOrderId());
-//                } catch (InterruptedException e) {
-//                    Thread.currentThread().interrupt();
-//                    log.error("Error in payment delay", e);
-//                }
-//            });
-//
-//            // Send Shipping with delay
-//            CompletableFuture.runAsync(() -> {
-//                try {
-//                    Thread.sleep(2000); // 2 seconds delay
-//                    Shipping shipping = dataGenerator.generateShipping(order.getOrderId());
-//                    kafkaTemplate.send(shippingTopic, shipping.getOrderId(), shipping);
-//                    log.info("Sent shipping for order: {}", shipping.getOrderId());
-//                } catch (InterruptedException e) {
-//                    Thread.currentThread().interrupt();
-//                    log.error("Error in shipping delay", e);
-//                }
-//            });
+            // Send Payment with small delay
+            CompletableFuture.runAsync(() -> {
+                try {
+                    Thread.sleep(1000); // 1 second delay
+                    Payment payment = dataGenerator.generatePayment(order.orderId());
+                    kafkaTemplate.send(paymentsTopic, payment.orderId(), payment);
+                    log.info("Sent payment for order: {}", payment.orderId());
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    log.error("Error in payment delay", e);
+                }
+            });
+
+            // Send Shipping with delay
+            CompletableFuture.runAsync(() -> {
+                try {
+                    Thread.sleep(2000); // 2 seconds delay
+                    Shipping shipping = dataGenerator.generateShipping(order.orderId());
+                    kafkaTemplate.send(shippingTopic, shipping.orderId(), shipping);
+                    log.info("Sent shipping for order: {}", shipping.orderId());
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    log.error("Error in shipping delay", e);
+                }
+            });
 
         } catch (Exception e) {
             log.error("Error generating test data", e);
