@@ -138,7 +138,11 @@ public class OrderReportTopology {
         StreamJoined<String, OrderReport, OrderDetail> orderReportStreamJoined =
                 StreamJoined.with(Serdes.String(), new JsonSerde<>(OrderReport.class), new JsonSerde<>(OrderDetail.class));
 
-        JoinWindows joinWindows = JoinWindows.ofTimeDifferenceWithNoGrace(Duration.ofSeconds(20));
+        JoinWindows joinWindows = JoinWindows
+                .ofTimeDifferenceWithNoGrace(Duration.ofSeconds(20));
+
+        TimeWindows tumblingWindows = TimeWindows
+                .ofSizeWithNoGrace(Duration.ofDays(30));
 
         KStream<String, OrderReport> orderReportsV2 = orderReports
                 .join(orderDetails,
@@ -147,6 +151,8 @@ public class OrderReportTopology {
                         orderReportStreamJoined);
 
         orderReportsV2
+                //.groupByKey()
+                //.windowedBy(tumblingWindows)
                 .print(Printed.<String, OrderReport>toSysOut().withLabel("order-report-joined-2"));
 
 
